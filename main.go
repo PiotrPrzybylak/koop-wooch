@@ -40,7 +40,7 @@ func main() {
 
 	addExampleData()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	//http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		write(w, "<h2>Welcome to Koop!</h2>")
 		write(w, " <a href=\"/product_form\">Add product</a>")
