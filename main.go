@@ -109,7 +109,7 @@ func main() {
 
 	http.HandleFunc("/delivery_form", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		renderTemplate(w, "delivery_form", suppliers)
+		renderTemplate(w, "delivery_form", deliverys)
 	})
 
 	http.HandleFunc("/delivery", func(w http.ResponseWriter, r *http.Request) {
