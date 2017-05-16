@@ -21,6 +21,16 @@ type Product struct {
 
 var products = []Product{}
 
+type Delivery struct {
+	Supplier string
+	Category string
+	Price	 float64
+	Unit 	 string
+	Quantity float64
+}
+
+var deliverys = []Delivery{}
+
 var shoppingCart = []Product{}
 
 type Supplier struct {
@@ -36,7 +46,7 @@ type Category struct {
 
 var categories = []Category{}
 
-var templates = template.Must(template.ParseFiles("templates/suppliers.html", "templates/supplier_form.html", "templates/categories.html", "templates/category_form.html", "templates/product_form.html", "templates/products.html"))
+var templates = template.Must(template.ParseFiles("templates/suppliers.html", "templates/supplier_form.html", "templates/categories.html", "templates/category_form.html", "templates/product_form.html", "templates/products.html", "templates/delivery_form.html", "templates/delivery.html"))
 
 func main() {
 
@@ -53,6 +63,8 @@ func main() {
 		write(w, " <a href='/suppliers'>Show suppliers</a>")
 		write(w, " <a href='/category_form'>Add category</a>")
 		write(w, " <a href='/categories'>Show categories</a>")
+		write(w, " <a href='/delivery_form'>Add delivery</a>")
+		write(w, " <a href='/delivery'>Show delivery</a>")
 
 	})
 
@@ -79,8 +91,32 @@ func main() {
 	http.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "products", products)
-
 	})
+
+	http.HandleFunc("/add_delivery", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		supplier := r.URL.Query().Get("supplier")
+		category := r.URL.Query().Get("category")
+		price, _ := strconv.ParseFloat(r.URL.Query().Get("price"), 64)
+		unit := r.URL.Query().Get("unit")
+		quantity, _ := strconv.ParseFloat(r.URL.Query().Get("quantity"), 64)
+
+		d := Delivery{Supplier: supplier, Category: category, Unit: unit, Quantity: quantity, Price: price}
+
+		deliverys = append(deliverys, d)
+		http.Redirect(w, r, "/", 303)
+	})
+
+	http.HandleFunc("/delivery_form", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		renderTemplate(w, "delivery_form", suppliers)
+	})
+
+	http.HandleFunc("/delivery", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		renderTemplate(w, "delivery", deliverys)
+	})
+
 	http.HandleFunc("/Put_in", func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
 		for _, product := range products {
@@ -148,6 +184,9 @@ func addExampleData() {
 
 	categories = append(categories,Category{ "Vegetables" })
 	categories = append(categories,Category{ "Fruits" })
+
+	deliverys = append(deliverys, Delivery{"Zdzisław Sztacheta", "Carrot",123, "kg", 100})
+	deliverys = append(deliverys, Delivery{"Tesco", "Apple",666, "kg", 200})
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {

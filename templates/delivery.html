@@ -1,10 +1,12 @@
-<h2>Categories</h2>
-
+<h2>Delivery</h2>
 
 <table>
-{{range .}}
-<tr><td>{{.Name}}</td></tr>
-{{end}}
+    <tr><th>Supplier</th><th>Category<th><th>Unit</th><th>Quantity</th><th>Price</th></tr>
+    {{range .}}
+    <tr><td>{{.Supplier}}</td><td>{{.Category}}<td><td>{{.Unit}}</td><td>{{.Quantity}}</td><td>{{.Price}}<td><td><form action='Put_in'><input type='hidden' name='supplier' value='{{.Supplier}}'></form></td></tr>
+    {{end}}
+
 </table>
+
 
 <a href="/">Home</a> <a href="/product_form">Add product</a> <a href="/products">Show products</a> <a href='/supplier_form'>Add supplier</a> <a href='/suppliers'>Show suppliers</a> <a href='/category_form'>Add category</a> <a href='/category'>Show category</a> <a href='/delivery_form'>Add delivery</a> <a href="/delivery">Show delivery</a>

@@ -1,7 +1,16 @@
 <html>
-<h2>Add product</h2>
+<h2>Add delivery</h2>
 
-<form action='add_product'>PRODUCT<input name='name'>CATEGORY
+<form action='add_delivery'>
+
+    SUPPLIER
+    <select name='supplier'>
+        {{range .}}
+        <option>{{.Name}}</option>
+        {{end}}
+    </select>
+
+    CATEGORY
     <select name='category'>
         {{range .}}
         <option>{{.Name}}</option>
