@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"koop-wooch/aaa"
 )
 
 type Product struct {
@@ -39,6 +40,8 @@ var categories = []Category{}
 var templates = template.Must(template.ParseFiles("templates/suppliers.html", "templates/supplier_form.html", "templates/categories.html", "templates/category_form.html", "templates/product_form.html", "templates/products.html"))
 
 func main() {
+aaa.Hahaha()
+
 
 	_ = mux.NewRouter()
 
