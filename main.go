@@ -42,7 +42,7 @@ var templates = template.Must(template.ParseFiles("templates/suppliers.html", "t
 func main() {
 aaa.Hahaha()
 
-
+a()
 	_ = mux.NewRouter()
 
 	addExampleData()
