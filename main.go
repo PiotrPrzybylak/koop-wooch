@@ -50,11 +50,11 @@ var templates = template.Must(template.ParseFiles("templates/suppliers.html", "t
 
 func main() {
 
-	_ = mux.NewRouter()
+	r := mux.NewRouter()
 
 	addExampleData()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		write(w, "<h2>Welcome to Koop!</h2>")
 		write(w, " <a href=\"/product_form\">Add product</a>")
@@ -68,7 +68,7 @@ func main() {
 
 	})
 
-	http.HandleFunc("/add_product", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/add_product", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		name := r.URL.Query().Get("name")
 		category := r.URL.Query().Get("category")
@@ -83,17 +83,17 @@ func main() {
 
 	})
 
-	http.HandleFunc("/product_form", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/product_form", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "product_form", categories)
 	})
 
-	http.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "products", products)
 	})
 
-	http.HandleFunc("/add_delivery", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/add_delivery", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		supplier := r.URL.Query().Get("supplier")
 		category := r.URL.Query().Get("category")
@@ -107,17 +107,17 @@ func main() {
 		http.Redirect(w, r, "/", 303)
 	})
 
-	http.HandleFunc("/delivery_form", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/delivery_form", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "delivery_form", deliverys)
 	})
 
-	http.HandleFunc("/delivery", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/delivery", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "delivery", deliverys)
 	})
 
-	http.HandleFunc("/Put_in", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/Put_in", func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
 		for _, product := range products {
 			if name == product.Name {
@@ -130,33 +130,33 @@ func main() {
 		//http.Redirect(w, r, "/shopping_cart", 303)
 	})
 
-	http.HandleFunc("/suppliers", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/suppliers", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "suppliers", suppliers)
 	})
 
-	http.HandleFunc("/supplier_form", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/supplier_form", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "supplier_form", nil)
 	})
 
-	http.HandleFunc("/add_supplier", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/add_supplier", func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
 		day := MustParseWeekday(r.URL.Query().Get("delivery_day"))
 		suppliers = append(suppliers, Supplier{name, day})
 		http.Redirect(w, r, "/suppliers", 303)
 	})
 
-	http.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "categories", categories)
 	})
-	http.HandleFunc("/category_form", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/category_form", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "category_form", nil)
 	})
 
-	http.HandleFunc("/add_category", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/add_category", func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
 		categories = append(categories, Category{name})
 		http.Redirect(w, r, "/categories", 303)
@@ -167,7 +167,7 @@ func main() {
 		port = "1234"
 	}
 
-	http.ListenAndServe("0.0.0.0:"+port, nil)
+	http.ListenAndServe("0.0.0.0:"+port, r)
 
 }
 
