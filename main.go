@@ -10,17 +10,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/PiotrPrzybylak/koop-wooch/domain"
+	"github.com/PiotrPrzybylak/koop-wooch/infracture/persistance/memory"
 )
-
-type Product struct {
-	Name     string
-	Category string
-	Price    float64
-	Unit     string
-	Quantity float64
-}
-
-var products = []Product{}
 
 type Delivery struct {
 	Supplier string
@@ -32,7 +24,7 @@ type Delivery struct {
 
 var deliverys = []Delivery{}
 
-var shoppingCart = []Product{}
+var shoppingCart = []domain.Product{}
 
 type Supplier struct {
 	Name        string
@@ -47,17 +39,21 @@ type Category struct {
 
 var categories = []Category{}
 
-var templates = template.Must(template.ParseFiles("templates/suppliers.html", "templates/supplier_form.html", "templates/categories.html", "templates/category_form.html", "templates/product_form.html", "templates/products.html", "templates/delivery_form.html", "templates/delivery.html"))
+var templates = template.Must(template.ParseFiles("templates/suppliers.html",
+	"templates/supplier_form.html", "templates/categories.html",
+	"templates/category_form.html", "templates/product_form.html",
+	"templates/products.html", "templates/delivery_form.html",
+	"templates/delivery.html", "templates/error.html"))
 
 var store = sessions.NewCookieStore([]byte("something-very-very-secret"))
 
-
-
 func main() {
+
+	productService := domain.NewProductService(memory.NewProductRepository())
 
 	r := mux.NewRouter()
 
-	addExampleData()
+	addExampleData(productService)
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -81,9 +77,15 @@ func main() {
 		unit := r.URL.Query().Get("unit")
 		quantity, _ := strconv.ParseFloat(r.URL.Query().Get("quantity"), 64)
 
-		p := Product{Name: name, Category: category, Unit: unit, Quantity: quantity, Price: price}
+		p := domain.Product{Name: name, Category: category, Unit: unit, Quantity: quantity, Price: price}
+		_, err := productService.Create(p)
 
-		products = append(products, p)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			renderTemplate(w, "error", err)
+			return
+		}
+
 		http.Redirect(w, r, "/", 303)
 
 	})
@@ -95,6 +97,11 @@ func main() {
 
 	r.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		products, err := productService.All()
+		if err != nil {
+			renderTemplate(w, "error", err)
+			return
+		}
 		renderTemplate(w, "products", products)
 	})
 
@@ -124,6 +131,11 @@ func main() {
 
 	r.HandleFunc("/Put_in", func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
+		products, err := productService.All()
+		if err != nil {
+			renderTemplate(w, "error", err)
+			return
+		}
 		for _, product := range products {
 			if name == product.Name {
 				shoppingCart = append(shoppingCart, product)
@@ -155,7 +167,6 @@ func main() {
 	r.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request) {
 
 		type CategoriesAndProducts struct {
-
 		}
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -208,9 +219,9 @@ func write(w http.ResponseWriter, text string) {
 	w.Write([]byte(text))
 }
 
-func addExampleData() {
-	products = append(products, Product{"Carrot", "Vegetables", 123, "piece", 100})
-	products = append(products, Product{"Apple", "Fruits", 666, "kg", 200})
+func addExampleData(productService domain.ProductService) {
+	productService.Create(domain.Product{"", "Carrot", "Vegetables", 123, "piece", 100})
+	productService.Create(domain.Product{"", "Apple", "Fruits", 666, "kg", 200})
 
 	suppliers = append(suppliers, Supplier{"Zdzisław Sztacheta", time.Monday})
 	suppliers = append(suppliers, Supplier{"Tesco", time.Friday})
@@ -249,14 +260,3 @@ func MustParseWeekday(weekday string) time.Weekday {
 		panic(fmt.Sprintf("Wrong weekday: %v", weekday))
 	}
 }
-
-//func MustParseUnit(option string) unit.Option {
-//	switch option {
-//	case "piece":
-//		return unit.piece
-//	case "kg":
-//		return unit.kg
-//	default:
-//		panic(fmt.Sprintf("Wrong unit: &v", option))
-//	}
-//}
