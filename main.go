@@ -9,13 +9,14 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 )
 
 type Product struct {
 	Name     string
 	Category string
 	Price    float64
-	Unit 	 string
+	Unit     string
 	Quantity float64
 }
 
@@ -24,8 +25,8 @@ var products = []Product{}
 type Delivery struct {
 	Supplier string
 	Category string
-	Price	 float64
-	Unit 	 string
+	Price    float64
+	Unit     string
 	Quantity float64
 }
 
@@ -47,6 +48,10 @@ type Category struct {
 var categories = []Category{}
 
 var templates = template.Must(template.ParseFiles("templates/suppliers.html", "templates/supplier_form.html", "templates/categories.html", "templates/category_form.html", "templates/product_form.html", "templates/products.html", "templates/delivery_form.html", "templates/delivery.html"))
+
+var store = sessions.NewCookieStore([]byte("something-very-very-secret"))
+
+
 
 func main() {
 
@@ -73,8 +78,8 @@ func main() {
 		name := r.URL.Query().Get("name")
 		category := r.URL.Query().Get("category")
 		price, _ := strconv.ParseFloat(r.URL.Query().Get("price"), 64)
-		unit:= r.URL.Query().Get("unit")
-		quantity, _:= strconv.ParseFloat(r.URL.Query().Get("quantity"), 64)
+		unit := r.URL.Query().Get("unit")
+		quantity, _ := strconv.ParseFloat(r.URL.Query().Get("quantity"), 64)
 
 		p := Product{Name: name, Category: category, Unit: unit, Quantity: quantity, Price: price}
 
@@ -148,6 +153,11 @@ func main() {
 	})
 
 	r.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request) {
+
+		type CategoriesAndProducts struct {
+
+		}
+
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "categories", categories)
 	})
@@ -160,6 +170,29 @@ func main() {
 		name := r.URL.Query().Get("name")
 		categories = append(categories, Category{name})
 		http.Redirect(w, r, "/categories", 303)
+	})
+
+	r.HandleFunc("/show_session", func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "session-name")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		write(w, "<ul>")
+		for key, value := range session.Values {
+			write(w, fmt.Sprintf("<li>%v : %v</li>", key, value))
+		}
+		write(w, "</ul>")
+	})
+
+	r.HandleFunc("/add_session_param", func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "session-name")
+		name := r.URL.Query().Get("name")
+		value := r.URL.Query().Get("value")
+
+		session.Values[name] = value
+
+		session.Save(r, w)
+
+		http.Redirect(w, r, "/show_session", 303)
+
 	})
 
 	port := os.Getenv("PORT")
@@ -176,17 +209,17 @@ func write(w http.ResponseWriter, text string) {
 }
 
 func addExampleData() {
-	products = append(products, Product{"Carrot", "Vegetables", 123, "piece"	, 100 })
+	products = append(products, Product{"Carrot", "Vegetables", 123, "piece", 100})
 	products = append(products, Product{"Apple", "Fruits", 666, "kg", 200})
 
 	suppliers = append(suppliers, Supplier{"Zdzisław Sztacheta", time.Monday})
 	suppliers = append(suppliers, Supplier{"Tesco", time.Friday})
 
-	categories = append(categories,Category{ "Vegetables" })
-	categories = append(categories,Category{ "Fruits" })
+	categories = append(categories, Category{"Vegetables"})
+	categories = append(categories, Category{"Fruits"})
 
-	deliverys = append(deliverys, Delivery{"Zdzisław Sztacheta", "Carrot",123, "kg", 100})
-	deliverys = append(deliverys, Delivery{"Tesco", "Apple",666, "kg", 200})
+	deliverys = append(deliverys, Delivery{"Zdzisław Sztacheta", "Carrot", 123, "kg", 100})
+	deliverys = append(deliverys, Delivery{"Tesco", "Apple", 666, "kg", 200})
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
