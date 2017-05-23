@@ -10,7 +10,7 @@ func NewSupplierRepository() domain.SupplierRepository {
 }
 
 type supplierRepository struct {
-	nextID   int
+	nextID    int
 	suppliers []domain.Supplier
 }
 
