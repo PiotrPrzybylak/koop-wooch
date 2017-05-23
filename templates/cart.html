@@ -1,0 +1,28 @@
+<h2>Cart items</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Unit</th>
+            <th>Quantity</th>
+            <th>Overall</th>
+        </tr>
+    </thead>
+    {{range .}}
+    <tr>
+        <td>{{.ID}}</td>
+        <td>{{.Name}}</td>
+        <td>{{.Category}}</td>
+        <td>{{.Price}}</td>
+        <td>{{.Unit}}</td>
+        <td>{{.Quantity}}</td>
+        <td>{{.Overall}}</td>
+    </tr>
+    {{end}}
+</table>
+
+<a href="/">Home</a> <a href="/product_form">Add product</a> <a href="/products">Show products</a> <a href='/supplier_form'>Add supplier</a> <a href='/suppliers'>Show suppliers</a> <a href='/category_form'>Add category</a> <a href='/category'>Show category</a> <a href='/delivery_form'>Add delivery</a> <a href="/delivery">Show delivery</a> <a href="/cart">Show cart items</a>

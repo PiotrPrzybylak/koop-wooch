@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 	"github.com/PiotrPrzybylak/koop-wooch/domain"
 	"github.com/PiotrPrzybylak/koop-wooch/infracture/persistance/memory"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 )
 
 type Delivery struct {
@@ -43,7 +43,8 @@ var templates = template.Must(template.ParseFiles("templates/suppliers.html",
 	"templates/supplier_form.html", "templates/categories.html",
 	"templates/category_form.html", "templates/product_form.html",
 	"templates/products.html", "templates/delivery_form.html",
-	"templates/delivery.html", "templates/error.html"))
+	"templates/delivery.html", "templates/error.html",
+	"templates/cart.html"))
 
 var store = sessions.NewCookieStore([]byte("something-very-very-secret"))
 
@@ -66,6 +67,7 @@ func main() {
 		write(w, " <a href='/categories'>Show categories</a>")
 		write(w, " <a href='/delivery_form'>Add delivery</a>")
 		write(w, " <a href='/delivery'>Show delivery</a>")
+		write(w, " <a href='/carts'>Show cart items</a>")
 
 	})
 
@@ -204,6 +206,11 @@ func main() {
 
 		http.Redirect(w, r, "/show_session", 303)
 
+	})
+
+	r.HandleFunc("/cart", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		renderTemplate(w, "cart", shoppingCart)
 	})
 
 	port := os.Getenv("PORT")
