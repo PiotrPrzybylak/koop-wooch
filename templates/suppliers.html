@@ -22,9 +22,9 @@
 
 
 <table>
-    <tr><th>Name</th><th>Delivery day</th></tr>
+    <tr><th>Name</th><th>Delivery day</th><th>Remove</th></tr>
 {{range .}}
-<tr><td>{{.Name}}</td><td>{{.DeliveryDay}}</td></tr>
+<tr><td>{{.Name}}</td><td>{{.DeliveryDay}}</td><td><form action='/delete_supplier'><input type="hidden" name="id" value="{{.ID}}"><input type='submit' value='Delete {{.Name}}'></form></td></tr>
 {{end}}
 </table>
 
