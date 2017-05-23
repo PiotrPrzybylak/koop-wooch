@@ -1,8 +1,8 @@
 package memory
 
 import (
-	"strconv"
 	"github.com/PiotrPrzybylak/koop-wooch/domain"
+	"strconv"
 )
 
 func NewProductRepository() domain.ProductRepository {
