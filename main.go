@@ -26,13 +26,6 @@ var deliverys = []Delivery{}
 
 var shoppingCart = []domain.Product{}
 
-type Supplier struct {
-	Name        string
-	DeliveryDay time.Weekday
-}
-
-var suppliers = []Supplier{}
-
 type Category struct {
 	Name string
 }
@@ -52,9 +45,11 @@ func main() {
 
 	productService := domain.NewProductService(memory.NewProductRepository())
 
+	supplierService := domain.NewSupplierService(memory.NewSupplierRepository())
+
 	r := mux.NewRouter()
 
-	addExampleData(productService)
+	addExampleData(productService, supplierService)
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -151,6 +146,11 @@ func main() {
 
 	r.HandleFunc("/suppliers", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		suppliers, err := supplierService.ListAll()
+		if err != nil {
+			renderTemplate(w, "error", err)
+			return
+		}
 		renderTemplate(w, "suppliers", suppliers)
 	})
 
@@ -162,7 +162,12 @@ func main() {
 	r.HandleFunc("/add_supplier", func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
 		day := MustParseWeekday(r.URL.Query().Get("delivery_day"))
-		suppliers = append(suppliers, Supplier{name, day})
+		_, err := supplierService.Create(domain.Supplier{"", name, day})
+		if err != nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			renderTemplate(w, "error", err)
+			return
+		}
 		http.Redirect(w, r, "/suppliers", 303)
 	})
 
@@ -226,12 +231,12 @@ func write(w http.ResponseWriter, text string) {
 	w.Write([]byte(text))
 }
 
-func addExampleData(productService domain.ProductService) {
+func addExampleData(productService domain.ProductService, supplierService domain.SupplierService) {
 	productService.Create(domain.Product{"", "Carrot", "Vegetables", 123, "piece", 100})
 	productService.Create(domain.Product{"", "Apple", "Fruits", 666, "kg", 200})
 
-	suppliers = append(suppliers, Supplier{"Zdzisław Sztacheta", time.Monday})
-	suppliers = append(suppliers, Supplier{"Tesco", time.Friday})
+	supplierService.Create(domain.Supplier{"", "Zdzisław Sztacheta", time.Monday})
+	supplierService.Create(domain.Supplier{"", "Tesco", time.Friday})
 
 	categories = append(categories, Category{"Vegetables"})
 	categories = append(categories, Category{"Fruits"})
