@@ -14,16 +14,6 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-type Delivery struct {
-	Supplier string
-	Category string
-	Price    float64
-	Unit     string
-	Quantity float64
-}
-
-var deliverys = []Delivery{}
-
 var shoppingCart = []domain.Product{}
 
 type Category struct {
@@ -44,12 +34,13 @@ var store = sessions.NewCookieStore([]byte("something-very-very-secret"))
 func main() {
 
 	productService := domain.NewProductService(memory.NewProductRepository())
+	deliveryService := domain.NewDeliverytService(memory.NewDeliveryRepository())
 
 	supplierService := domain.NewSupplierService(memory.NewSupplierRepository())
 
 	r := mux.NewRouter()
 
-	addExampleData(productService, supplierService)
+	addExampleData(productService, supplierService, deliveryService)
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -110,19 +101,38 @@ func main() {
 		unit := r.URL.Query().Get("unit")
 		quantity, _ := strconv.ParseFloat(r.URL.Query().Get("quantity"), 64)
 
-		d := Delivery{Supplier: supplier, Category: category, Unit: unit, Quantity: quantity, Price: price}
+		d := domain.Delivery{Supplier: supplier, Category: category, Unit: unit, Quantity: quantity, Price: price}
+		_, err := deliveryService.Create(d)
 
-		deliverys = append(deliverys, d)
-		http.Redirect(w, r, "/", 303)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			renderTemplate(w, "error", err)
+			return
+		}
+
+		http.Redirect(w, r, "/delivery", 303)
 	})
 
 	r.HandleFunc("/delivery_form", func(w http.ResponseWriter, r *http.Request) {
+		deliveries, err := deliveryService.All()
+
+		if err != nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			renderTemplate(w, "error", err)
+			return
+		}
+
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		renderTemplate(w, "delivery_form", deliverys)
+		renderTemplate(w, "delivery_form", deliveries)
 	})
 
 	r.HandleFunc("/delivery", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		deliverys, err := deliveryService.All()
+		if err != nil {
+			renderTemplate(w, "error", err)
+			return
+		}
 		renderTemplate(w, "delivery", deliverys)
 	})
 
@@ -231,7 +241,7 @@ func write(w http.ResponseWriter, text string) {
 	w.Write([]byte(text))
 }
 
-func addExampleData(productService domain.ProductService, supplierService domain.SupplierService) {
+func addExampleData(productService domain.ProductService, supplierService domain.SupplierService, deliveryService domain.DeliveryService) {
 	productService.Create(domain.Product{"", "Carrot", "Vegetables", 123, "piece", 100})
 	productService.Create(domain.Product{"", "Apple", "Fruits", 666, "kg", 200})
 
@@ -241,8 +251,8 @@ func addExampleData(productService domain.ProductService, supplierService domain
 	categories = append(categories, Category{"Vegetables"})
 	categories = append(categories, Category{"Fruits"})
 
-	deliverys = append(deliverys, Delivery{"Zdzisław Sztacheta", "Carrot", 123, "kg", 100})
-	deliverys = append(deliverys, Delivery{"Tesco", "Apple", 666, "kg", 200})
+	deliveryService.Create(domain.Delivery{"Zdzisław Sztacheta", "Carrot", 123, "kg", 100})
+	deliveryService.Create(domain.Delivery{"Tesco", "Apple", 666, "kg", 200})
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
