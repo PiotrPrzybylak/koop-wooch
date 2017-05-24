@@ -181,6 +181,18 @@ func main() {
 		http.Redirect(w, r, "/suppliers", 303)
 	})
 
+	r.HandleFunc("/delete_supplier", func(w http.ResponseWriter, r *http.Request) {
+		id := r.URL.Query().Get("id")
+
+		err := supplierService.Delete(id)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			renderTemplate(w, "error", err)
+			return
+		}
+		http.Redirect(w, r, "/suppliers", 303)
+	})
+
 	r.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request) {
 
 		type CategoriesAndProducts struct {
