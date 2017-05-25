@@ -21,7 +21,7 @@ var templates = template.Must(template.ParseFiles("templates/suppliers.html",
 	"templates/category_form.html", "templates/product_form.html",
 	"templates/products.html", "templates/delivery_form.html",
 	"templates/delivery.html", "templates/error.html",
-	"templates/cart.html", "templates/home.html"))
+	"templates/cart.html", "templates/home.html", "templates/footer.html"))
 
 var store = sessions.NewCookieStore([]byte("something-very-very-secret"))
 
@@ -127,7 +127,7 @@ func main() {
 		for _, product := range products {
 			if name == product.Name {
 				shoppingCart.Add(domain.CartItem{
-					Product: product,
+					Product:  product,
 					Quantity: 1,
 				})
 			}
