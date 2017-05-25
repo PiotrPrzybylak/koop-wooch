@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-var shoppingCart = []domain.Product{}
+var shoppingCart = domain.ShoppingCart{Items: map[string]domain.CartItem{}}
 
 type Category struct {
 	Name string
@@ -53,7 +53,7 @@ func main() {
 		write(w, " <a href='/categories'>Show categories</a>")
 		write(w, " <a href='/delivery_form'>Add delivery</a>")
 		write(w, " <a href='/delivery'>Show delivery</a>")
-		write(w, " <a href='/carts'>Show cart items</a>")
+		write(w, " <a href='/cart'>Show cart items</a>")
 
 	})
 
@@ -145,7 +145,10 @@ func main() {
 		}
 		for _, product := range products {
 			if name == product.Name {
-				shoppingCart = append(shoppingCart, product)
+				shoppingCart.Add(domain.CartItem{
+					Product: product,
+					Quantity: 1,
+				})
 			}
 		}
 
@@ -237,7 +240,7 @@ func main() {
 
 	r.HandleFunc("/cart", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		renderTemplate(w, "cart", shoppingCart)
+		renderTemplate(w, "cart", shoppingCart.Items)
 	})
 
 	port := os.Getenv("PORT")
