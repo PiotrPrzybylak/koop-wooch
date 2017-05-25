@@ -39,12 +39,10 @@ func main() {
 	addExampleData(productService, supplierService, deliveryService, categoryService)
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "home", nil)
 	})
 
 	r.HandleFunc("/add_product", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		name := r.URL.Query().Get("name")
 		category := r.URL.Query().Get("category")
 		price, _ := strconv.ParseFloat(r.URL.Query().Get("price"), 64)
@@ -55,7 +53,6 @@ func main() {
 		_, err := productService.Create(p)
 
 		if err != nil {
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			renderTemplate(w, "error", err)
 			return
 		}
@@ -65,7 +62,6 @@ func main() {
 	})
 
 	r.HandleFunc("/product_form", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		categories, err := categoryService.All()
 		if err != nil {
 			renderTemplate(w, "error", err)
@@ -75,7 +71,6 @@ func main() {
 	})
 
 	r.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		products, err := productService.All()
 		if err != nil {
 			renderTemplate(w, "error", err)
@@ -85,7 +80,6 @@ func main() {
 	})
 
 	r.HandleFunc("/add_delivery", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		supplier := r.URL.Query().Get("supplier")
 		category := r.URL.Query().Get("category")
 		price, _ := strconv.ParseFloat(r.URL.Query().Get("price"), 64)
@@ -96,7 +90,6 @@ func main() {
 		_, err := deliveryService.Create(d)
 
 		if err != nil {
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			renderTemplate(w, "error", err)
 			return
 		}
@@ -108,17 +101,14 @@ func main() {
 		deliveries, err := deliveryService.All()
 
 		if err != nil {
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			renderTemplate(w, "error", err)
 			return
 		}
 
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "delivery_form", deliveries)
 	})
 
 	r.HandleFunc("/delivery", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		deliverys, err := deliveryService.All()
 		if err != nil {
 			renderTemplate(w, "error", err)
@@ -149,7 +139,6 @@ func main() {
 	})
 
 	r.HandleFunc("/suppliers", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		suppliers, err := supplierService.ListAll()
 		if err != nil {
 			renderTemplate(w, "error", err)
@@ -159,7 +148,6 @@ func main() {
 	})
 
 	r.HandleFunc("/supplier_form", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "supplier_form", nil)
 	})
 
@@ -168,7 +156,6 @@ func main() {
 		day := MustParseWeekday(r.URL.Query().Get("delivery_day"))
 		_, err := supplierService.Create(domain.Supplier{"", name, day})
 		if err != nil {
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			renderTemplate(w, "error", err)
 			return
 		}
@@ -180,7 +167,6 @@ func main() {
 
 		err := supplierService.Delete(id)
 		if err != nil {
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			renderTemplate(w, "error", err)
 			return
 		}
@@ -197,11 +183,9 @@ func main() {
 			renderTemplate(w, "error", err)
 			return
 		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "categories", categories)
 	})
 	r.HandleFunc("/category_form", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		renderTemplate(w, "category_form", nil)
 	})
 
@@ -210,7 +194,6 @@ func main() {
 		c := domain.Category{Name: name}
 		_, err := categoryService.Create(c)
 		if err != nil {
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			renderTemplate(w, "error", err)
 			return
 		}
@@ -273,6 +256,7 @@ func addExampleData(productService domain.ProductService, supplierService domain
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err := templates.ExecuteTemplate(w, tmpl+".html", data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
