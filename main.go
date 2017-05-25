@@ -14,42 +14,29 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-type Delivery struct {
-	Supplier string
-	Category string
-	Price    float64
-	Unit     string
-	Quantity float64
-}
-
-var deliverys = []Delivery{}
-
 var shoppingCart = []domain.Product{}
-
-type Supplier struct {
-	Name        string
-	DeliveryDay time.Weekday
-}
-
-var suppliers = []Supplier{}
 
 var templates = template.Must(template.ParseFiles("templates/suppliers.html",
 	"templates/supplier_form.html", "templates/categories.html",
 	"templates/category_form.html", "templates/product_form.html",
 	"templates/products.html", "templates/delivery_form.html",
-	"templates/delivery.html", "templates/error.html"))
+	"templates/delivery.html", "templates/error.html",
+	"templates/cart.html"))
 
 var store = sessions.NewCookieStore([]byte("something-very-very-secret"))
 
 func main() {
 
 	productService := domain.NewProductService(memory.NewProductRepository())
+	deliveryService := domain.NewDeliverytService(memory.NewDeliveryRepository())
+
+	supplierService := domain.NewSupplierService(memory.NewSupplierRepository())
 
 	categoryService := domain.NewCategoryService(memory.NewCategoryRepository())
 
 	r := mux.NewRouter()
 
-	addExampleData(productService, categoryService)
+	addExampleData(productService, supplierService, deliveryService, categoryService)
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -62,6 +49,7 @@ func main() {
 		write(w, " <a href='/categories'>Show categories</a>")
 		write(w, " <a href='/delivery_form'>Add delivery</a>")
 		write(w, " <a href='/delivery'>Show delivery</a>")
+		write(w, " <a href='/carts'>Show cart items</a>")
 
 	})
 
@@ -114,19 +102,38 @@ func main() {
 		unit := r.URL.Query().Get("unit")
 		quantity, _ := strconv.ParseFloat(r.URL.Query().Get("quantity"), 64)
 
-		d := Delivery{Supplier: supplier, Category: category, Unit: unit, Quantity: quantity, Price: price}
+		d := domain.Delivery{Supplier: supplier, Category: category, Unit: unit, Quantity: quantity, Price: price}
+		_, err := deliveryService.Create(d)
 
-		deliverys = append(deliverys, d)
-		http.Redirect(w, r, "/", 303)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			renderTemplate(w, "error", err)
+			return
+		}
+
+		http.Redirect(w, r, "/delivery", 303)
 	})
 
 	r.HandleFunc("/delivery_form", func(w http.ResponseWriter, r *http.Request) {
+		deliveries, err := deliveryService.All()
+
+		if err != nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			renderTemplate(w, "error", err)
+			return
+		}
+
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		renderTemplate(w, "delivery_form", deliverys)
+		renderTemplate(w, "delivery_form", deliveries)
 	})
 
 	r.HandleFunc("/delivery", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		deliverys, err := deliveryService.All()
+		if err != nil {
+			renderTemplate(w, "error", err)
+			return
+		}
 		renderTemplate(w, "delivery", deliverys)
 	})
 
@@ -150,6 +157,11 @@ func main() {
 
 	r.HandleFunc("/suppliers", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		suppliers, err := supplierService.ListAll()
+		if err != nil {
+			renderTemplate(w, "error", err)
+			return
+		}
 		renderTemplate(w, "suppliers", suppliers)
 	})
 
@@ -161,7 +173,24 @@ func main() {
 	r.HandleFunc("/add_supplier", func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
 		day := MustParseWeekday(r.URL.Query().Get("delivery_day"))
-		suppliers = append(suppliers, Supplier{name, day})
+		_, err := supplierService.Create(domain.Supplier{"", name, day})
+		if err != nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			renderTemplate(w, "error", err)
+			return
+		}
+		http.Redirect(w, r, "/suppliers", 303)
+	})
+
+	r.HandleFunc("/delete_supplier", func(w http.ResponseWriter, r *http.Request) {
+		id := r.URL.Query().Get("id")
+
+		err := supplierService.Delete(id)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			renderTemplate(w, "error", err)
+			return
+		}
 		http.Redirect(w, r, "/suppliers", 303)
 	})
 
@@ -218,6 +247,11 @@ func main() {
 
 	})
 
+	r.HandleFunc("/cart", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		renderTemplate(w, "cart", shoppingCart)
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "1234"
@@ -231,18 +265,18 @@ func write(w http.ResponseWriter, text string) {
 	w.Write([]byte(text))
 }
 
-func addExampleData(productService domain.ProductService, categoryService domain.CategoryService) {
+func addExampleData(productService domain.ProductService, supplierService domain.SupplierService, deliveryService domain.DeliveryService, categoryService domain.CategoryService) {
 	productService.Create(domain.Product{"", "Carrot", "Vegetables", 123, "piece", 100})
 	productService.Create(domain.Product{"", "Apple", "Fruits", 666, "kg", 200})
 
-	suppliers = append(suppliers, Supplier{"Zdzisław Sztacheta", time.Monday})
-	suppliers = append(suppliers, Supplier{"Tesco", time.Friday})
+	supplierService.Create(domain.Supplier{"", "Zdzisław Sztacheta", time.Monday})
+	supplierService.Create(domain.Supplier{"", "Tesco", time.Friday})
 
 	categoryService.Create(domain.Category{Name: "Vegetables"})
 	categoryService.Create(domain.Category{Name: "Fruits"})
 
-	deliverys = append(deliverys, Delivery{"Zdzisław Sztacheta", "Carrot", 123, "kg", 100})
-	deliverys = append(deliverys, Delivery{"Tesco", "Apple", 666, "kg", 200})
+	deliveryService.Create(domain.Delivery{"Zdzisław Sztacheta", "Carrot", 123, "kg", 100})
+	deliveryService.Create(domain.Delivery{"Tesco", "Apple", 666, "kg", 200})
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {

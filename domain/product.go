@@ -9,6 +9,10 @@ type Product struct {
 	Quantity float64
 }
 
+func (p Product) Overall() float64 {
+	return p.Price * p.Quantity
+}
+
 type ProductService interface {
 	Create(product Product) (string, error)
 	All() ([]Product, error)
