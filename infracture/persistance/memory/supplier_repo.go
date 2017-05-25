@@ -1,9 +1,9 @@
 package memory
 
 import (
+	"errors"
 	"github.com/PiotrPrzybylak/koop-wooch/domain"
 	"strconv"
-	"errors"
 )
 
 func NewSupplierRepository() domain.SupplierRepository {
@@ -26,7 +26,7 @@ func (r supplierRepository) ListAll() ([]domain.Supplier, error) {
 	return r.suppliers, nil
 }
 
-func (r *supplierRepository) Delete(id string) (error) {
+func (r *supplierRepository) Delete(id string) error {
 	var result int = -1
 	for index, value := range r.suppliers {
 		if value.ID == id {

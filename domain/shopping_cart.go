@@ -14,7 +14,7 @@ func (s *ShoppingCart) Add(ci CartItem) {
 }
 
 type CartItem struct {
-	Product Product
+	Product  Product
 	Quantity uint
 }
 
