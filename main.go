@@ -21,7 +21,7 @@ var templates = template.Must(template.ParseFiles("templates/suppliers.html",
 	"templates/category_form.html", "templates/product_form.html",
 	"templates/products.html", "templates/delivery_form.html",
 	"templates/delivery.html", "templates/error.html",
-	"templates/cart.html"))
+	"templates/cart.html", "templates/home.html"))
 
 var store = sessions.NewCookieStore([]byte("something-very-very-secret"))
 
@@ -40,17 +40,7 @@ func main() {
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		write(w, "<h2>Welcome to Koop!</h2>")
-		write(w, " <a href=\"/product_form\">Add product</a>")
-		write(w, " <a href=\"/products\">Show products</a>")
-		write(w, " <a href='/supplier_form'>Add supplier</a>")
-		write(w, " <a href='/suppliers'>Show suppliers</a>")
-		write(w, " <a href='/category_form'>Add category</a>")
-		write(w, " <a href='/categories'>Show categories</a>")
-		write(w, " <a href='/delivery_form'>Add delivery</a>")
-		write(w, " <a href='/delivery'>Show delivery</a>")
-		write(w, " <a href='/cart'>Show cart items</a>")
-
+		renderTemplate(w, "home", nil)
 	})
 
 	r.HandleFunc("/add_product", func(w http.ResponseWriter, r *http.Request) {
