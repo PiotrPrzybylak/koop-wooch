@@ -98,14 +98,19 @@ func main() {
 	})
 
 	r.HandleFunc("/delivery_form", func(w http.ResponseWriter, r *http.Request) {
-		deliveries, err := deliveryService.All()
+
+		suppliers, err := supplierService.ListAll()
+		categories, err :=categoryService.All()
 
 		if err != nil {
 			renderTemplate(w, "error", err)
 			return
 		}
-
-		renderTemplate(w, "delivery_form", deliveries)
+		type data struct{
+			Suppliers []domain.Supplier
+			Categories []domain.Category
+		}
+		renderTemplate(w, "delivery_form", data{suppliers, categories})
 	})
 
 	r.HandleFunc("/delivery", func(w http.ResponseWriter, r *http.Request) {
