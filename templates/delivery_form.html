@@ -5,15 +5,15 @@
 
     SUPPLIER
     <select name='supplier'>
-        {{range .}}
-        <option>{{.Supplier}}</option>
+        {{range .Suppliers}}
+        <option>{{.Name}}</option>
         {{end}}
     </select>
 
     CATEGORY
     <select name='category'>
-        {{range .}}
-        <option>{{.Category}}</option>
+        {{range .Categories}}
+        <option>{{.Name}}</option>
         {{end}}
     </select>
 

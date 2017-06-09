@@ -1,5 +1,17 @@
 <h2>Cart items</h2>
+<style>
+    table, th, td {
+        border: 1px solid black;
+    }
 
+    table {
+        margin: 10px;
+    }
+
+    td, th {
+        padding: 4px;
+    }
+</style>
 <table>
     <thead>
         <tr>
@@ -11,8 +23,11 @@
             <th>Quantity</th>
             <th>Overall</th>
         </tr>
+
+
+
     </thead>
-    {{range .}}
+    {{range .Items}}
     <tr>
         <td>{{.Product.ID}}</td>
         <td>{{.Product.Name}}</td>
@@ -22,7 +37,13 @@
         <td>{{.Quantity}}</td>
         <td>{{.Overall}}</td>
     </tr>
+
+
     {{end}}
 </table>
+<body>
 
+<h4>Suma Twoich zakupów to {{ .Sum }} PLN </h4>
+
+</body>
 {{template "footer.html"}}
