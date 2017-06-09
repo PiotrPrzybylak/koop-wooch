@@ -21,3 +21,12 @@ type CartItem struct {
 func (c CartItem) Overall() float64 {
 	return float64(c.Quantity) * c.Product.Price
 }
+
+func (s *ShoppingCart) Sum (Items map[string]CartItem) float64 {
+	var sum float64
+
+	for _,item := range s.Items {
+	sum += item.Overall()
+	}
+	return sum
+}
