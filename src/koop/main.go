@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/PiotrPrzybylak/koop-wooch/domain"
-	"github.com/PiotrPrzybylak/koop-wooch/infracture/persistance/memory"
+	"koop/domain"
+	"koop/infracture/persistance/memory"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
@@ -244,8 +244,8 @@ func main() {
 		port = "1234"
 	}
 
-	http.ListenAndServe("0.0.0.0:"+port, r)
-
+	err := http.ListenAndServe("0.0.0.0:"+port, r)
+	fmt.Print(err)
 }
 
 func write(w http.ResponseWriter, text string) {

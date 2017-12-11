@@ -2,7 +2,7 @@ package memory
 
 import (
 	"errors"
-	"github.com/PiotrPrzybylak/koop-wooch/domain"
+	"koop/domain"
 	"strconv"
 )
 

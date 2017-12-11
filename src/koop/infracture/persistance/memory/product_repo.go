@@ -1,7 +1,7 @@
 package memory
 
 import (
-	"github.com/PiotrPrzybylak/koop-wooch/domain"
+	"koop/domain"
 	"strconv"
 )
 
